@@ -20,12 +20,12 @@ public class RawSqlExecutor : IRawSqlExecutor
     {
         // This is only concept testing, we don't care about SQL injection here :)
         // var rawResult = await _context.Database.ExecuteSqlRawAsync(sql);
-        var testResult = SomeCursedDynamicThing(_context, sql, new Dictionary<string, object>()).ToList();
+        var dynamicResult = DynamicResultQuery(_context, sql, new Dictionary<string, object>()).ToList();
 
-        return JsonSerializer.Serialize(testResult);
+        return JsonSerializer.Serialize(dynamicResult);
     }
 
-    private static IEnumerable<dynamic?> SomeCursedDynamicThing(DbContext db, string Sql, Dictionary<string, object> Params)
+    private static IEnumerable<dynamic?> DynamicResultQuery(DbContext db, string Sql, Dictionary<string, object> Params)
     {
         using var cmd = db.Database.GetDbConnection().CreateCommand();
 

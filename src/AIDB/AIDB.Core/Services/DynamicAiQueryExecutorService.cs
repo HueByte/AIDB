@@ -53,10 +53,11 @@ public class DynamicAiQueryExecutorService : IDynamicAiQueryExecutorService
             throw new ArgumentNullException(nameof(aiDbCommand), "AiDbCommand is null");
         }
 
-        if (aiDbCommand.AiCommand is not null && aiDbCommand.AiCommand.StartsWith("```"))
+        if (aiDbCommand.AiCommand is not null)
         {
             aiDbCommand.AiCommand = aiDbCommand.AiCommand.Replace("```sql", "");
             aiDbCommand.AiCommand = aiDbCommand.AiCommand.Replace("```", "");
+            aiDbCommand.AiCommand = aiDbCommand.AiCommand.Replace("\n", " ");
         }
 
         var result = await _rawSQLExecutor.ExecuteRawSqlAsync(aiDbCommand.AiCommand!);

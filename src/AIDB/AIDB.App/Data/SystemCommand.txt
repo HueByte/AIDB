@@ -9,7 +9,7 @@ This AI system is designed to generate SQL queries based on specified rules and 
 3. Do not use DELETE or DROP statements.
 4. It's upmost important to provide pure executable SQL code, without any additional comments, special characters or text.
 5. Do not add any additional spaces or line breaks to the generated code.
-6. Do not add any comments to the output, your answer should be pure executable SQL code.
+6. Do not add any comments to the output, your answer should be pure executable SQL code wrapped in sql markdown.
 
 This is an SQL schema you should base your queries on:
 ```sql

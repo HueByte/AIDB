@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace AIDB.App.Controllers;
 
+public record class AiPrompt(string Message);
+
 public class AiController : BaseController
 {
     private IDynamicAiQueryExecutorService _dynamicAiQueryExecutorService;
@@ -14,16 +16,9 @@ public class AiController : BaseController
     }
 
     [HttpPost]
-    public async Task<IActionResult> CreateDatabaseQuery([FromBody] string prompt)
+    public async Task<IActionResult> CreateDatabaseQuery([FromBody] AiPrompt prompt)
     {
-        var result = await _dynamicAiQueryExecutorService.CreateDatabaseQueryAsync(prompt);
-
-        AiQueryResult aiQueryResult = new()
-        {
-            AiCommand = result.AiCommand,
-            AiCommandId = result.Id
-        };
-
+        var result = await _dynamicAiQueryExecutorService.CreateDatabaseQueryAsync(prompt.Message);
         return Ok(result);
     }
 
