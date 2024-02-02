@@ -17,6 +17,7 @@ namespace AIDB.App.Configuration
             // Core services
             services.AddControllers()
                     .AddJsonOptions(options => options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
+            services.AddMemoryCache();
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen();
             services.AddHttpContextAccessor();

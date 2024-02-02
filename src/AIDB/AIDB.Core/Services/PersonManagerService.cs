@@ -7,6 +7,7 @@ namespace AIDB.Core.Services;
 public class PersonManagerService : IPersonManagerService
 {
     private readonly IPersonRepository _personRepository;
+
     public PersonManagerService(IPersonRepository personRepository)
     {
         _personRepository = personRepository;

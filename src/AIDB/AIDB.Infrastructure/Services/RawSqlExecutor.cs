@@ -16,27 +16,26 @@ public class RawSqlExecutor : IRawSqlExecutor
         _context = context;
     }
 
-    public async Task<string?> ExecuteRawSqlAsync(string sql)
+    public Task<string?> ExecuteRawSqlAsync(string sql)
     {
         // This is only concept testing, we don't care about SQL injection here :)
-        // var rawResult = await _context.Database.ExecuteSqlRawAsync(sql);
         var dynamicResult = DynamicResultQuery(_context, sql, new Dictionary<string, object>()).ToList();
-
-        return JsonSerializer.Serialize(dynamicResult);
+        var serializedResult = JsonSerializer.Serialize(dynamicResult);
+        return Task.FromResult((string?)serializedResult);
     }
 
-    private static IEnumerable<dynamic?> DynamicResultQuery(DbContext db, string Sql, Dictionary<string, object> Params)
+    private static IEnumerable<dynamic?> DynamicResultQuery(DbContext db, string sql, Dictionary<string, object> @params)
     {
         using var cmd = db.Database.GetDbConnection().CreateCommand();
 
         if (cmd.Connection is null) yield return null;
 
-        cmd.CommandText = Sql;
+        cmd.CommandText = sql;
 
         if (cmd.Connection?.State != ConnectionState.Open)
             cmd.Connection?.Open();
 
-        foreach (KeyValuePair<string, object> p in Params)
+        foreach (KeyValuePair<string, object> p in @params)
         {
             DbParameter dbParameter = cmd.CreateParameter();
             dbParameter.ParameterName = p.Key;

@@ -6,9 +6,8 @@ import tablemark from "tablemark";
 const App = () => {
 	const [messages, setMessages] = useState([]);
 	const [message, setMessage] = useState("");
-	const [isFetchingData, setIsFetchingData] = useState(false);
-	const [freshData, setFreshData] = useState(null);
 	const aiEndpoint = "/api/Ai";
+	const rawSqlEndpoint = "/api/RawSql";
 	const AiAuthor = "AIDB";
 	const DbAuthor = "Database";
 
@@ -17,73 +16,69 @@ const App = () => {
 	};
 
 	const handleSendMessage = async () => {
-		// Check if the message is not empty before sending
-		if (message.trim() !== "") {
-			// Clear the input after sending
-			setMessage("");
-
-			// Update messages to show user message && start fetching loader
-			setMessages([...messages, { author: "Me", content: message }]);
-			setIsFetchingData(true);
-
-			var result = await fetchAiAnswer();
-			setFreshData(result);
+		if (message.trim() === "") {
+			return;
 		}
+
+		let result = {};
+		appendMessage({ author: "Me", content: message });
+		if (message.startsWith("/sql ")) {
+			result = await executeRawSql(message.substring(5));
+			appendMessage(result);
+		} else {
+			result = await fetchAiAnswer(message);
+			appendMessage(result);
+		}
+
+		setMessage("");
 	};
 
-	const fetchAiAnswer = async () => {
-		var aiResult = await fetch(aiEndpoint, {
-			body: JSON.stringify({ message: message }),
+	const executeRawSql = async (sql) => {
+		let result = await fetch(rawSqlEndpoint, {
+			body: JSON.stringify({ query: sql }),
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
 		});
 
-		var answer = await aiResult.json();
+		let parsedResult = await result.json();
+		let parsedMarkdownTable = tablemark(parsedResult);
 
-		return answer;
+		return { author: DbAuthor, content: parsedMarkdownTable };
+	};
+
+	const fetchAiAnswer = async (userMessage) => {
+		let aiResult = await fetch(aiEndpoint, {
+			body: JSON.stringify({ message: userMessage }),
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+		});
+
+		let parsedResult = await aiResult.json();
+		console.log(parsedResult);
+		return {
+			author: AiAuthor,
+			content: parsedResult.aiCommand,
+			id: parsedResult.id,
+		};
+	};
+
+	const appendMessage = (newMessage) => {
+		console.log(newMessage);
+		setMessages((prevMessages) => [...prevMessages, newMessage]);
 	};
 
 	const fetchSqlExecutionResult = async (commandId) => {
-		console.log(commandId);
-
 		var sqlResult = await fetch(`${aiEndpoint}?queryId=${commandId}`, {
 			method: "GET",
 		});
 
 		var answer = await sqlResult.json();
 
-		console.log(answer);
 		let parsedMarkdownTable = tablemark(answer);
-		setMessages([
-			...messages,
-			{ author: DbAuthor, content: parsedMarkdownTable },
-		]);
+		appendMessage({ author: DbAuthor, content: parsedMarkdownTable });
 
 		return answer;
 	};
-
-	useEffect(() => {
-		var updateData = async () => {
-			// ignore if there is no fresh data
-			if (!freshData) {
-				setIsFetchingData(false);
-				return;
-			}
-
-			setIsFetchingData(false);
-			setMessages([
-				...messages,
-				{
-					author: AiAuthor,
-					content: freshData?.aiCommand,
-					id: freshData?.id,
-				},
-			]);
-			setFreshData(null);
-		};
-
-		updateData();
-	}, [freshData]);
 
 	useEffect(() => {
 		var healthCheck = async () => {
@@ -97,7 +92,7 @@ const App = () => {
 	return (
 		<div className="w-full h-screen flex justify-center p-4">
 			<div className="w-[1024px] flex flex-col h-full">
-				<div className="flex-grow bg-elementLight rounded-md overflow-x-hidden overflow-y-auto">
+				<div className="flex-grow bg-element rounded-md overflow-x-hidden overflow-y-auto">
 					{messages.length > 0 ? (
 						messages.map((message, index) => (
 							<div key={index} className="flex p-4 w-full">
@@ -150,11 +145,11 @@ const App = () => {
 							placeholder="Type your message..."
 							value={message}
 							onChange={handleInputChange}
-							className="flex-1 border rounded-l p-2 focus:outline-none bg-element border-element"
+							className="flex-1 border rounded-l-md p-2 focus:outline-none bg-element border-element"
 						/>
 						<button
 							onClick={handleSendMessage}
-							className="bg-accent2 text-white p-2 rounded-r"
+							className="bg-accent2 text-white p-2 px-4 rounded-r"
 						>
 							Send
 						</button>

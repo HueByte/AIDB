@@ -6,7 +6,6 @@ import path from "path";
 import { execSync } from "child_process";
 import process from "process";
 
-// https://vitejs.dev/config/
 export default defineConfig({
 	plugins: [react()],
 	server: {

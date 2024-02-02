@@ -7,7 +7,8 @@ namespace AIDB.App.DataSeeder;
 
 public static class DataSeed
 {
-    private static ILogger _logger;
+    private static ILogger _logger = default!;
+
     public static async Task SeedDataAsync(WebApplication app)
     {
         await using var scope = app.Services.CreateAsyncScope();
